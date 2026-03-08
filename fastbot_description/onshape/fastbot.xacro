@@ -196,7 +196,7 @@
     </joint>
 
     <!-- Link lslidar_n10 -->
-    <link name="${robot_name}_n10_v2">
+    <link name="laser_link">
         <inertial>
             <origin xyz="0 0 0" rpy="0 0 0"/>
             <mass value="0.05"/>
@@ -224,7 +224,7 @@
     <joint name="${robot_name}_lidar" type="fixed">
         <origin xyz="-0.0166657 -0.00914257 0.111345" rpy="3.14159 1.13983e-46 -3.14159"/>
         <parent link="${robot_name}_base_link"/>
-        <child link="${robot_name}_n10_v2"/>
+        <child link="laser_link"/>
         <axis xyz="0 0 1"/>
     </joint>
 

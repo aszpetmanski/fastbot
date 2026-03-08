@@ -78,7 +78,7 @@ camera_auto_detect=0
 
 
 
-and add at the end of the file:
+and add at the end of the file right after the "[ALL]":
 start_x=1
 
 ## Than reboot

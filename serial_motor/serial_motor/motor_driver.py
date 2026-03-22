@@ -68,12 +68,15 @@ class MotorDriver(Node):
             10,
             callback_group=self.callback_group,
         )
-        self.motor_vels_pub_ = self.create_publisher(MotorVels, "motor_vels", 10)
-        self.encoder_pub_ = self.create_publisher(EncoderVals, "encoder_vals", 10)
+        self.motor_vels_pub_ = self.create_publisher(
+            MotorVels, "motor_vels", 10)
+        self.encoder_pub_ = self.create_publisher(
+            EncoderVals, "encoder_vals", 10)
         self.odom_pub_ = self.create_publisher(Odometry, "odom", 10)
 
         # Timer callback to continuously publish odometry
-        self.create_timer(0.1, self._timer_callback, callback_group=self.callback_group)
+        self.create_timer(0.1, self._timer_callback,
+                          callback_group=self.callback_group)
 
         # Initialize encoder and speed tracking variables.
         self.last_enc_read_time = time.time()
@@ -81,7 +84,8 @@ class MotorDriver(Node):
         self.last_m2_enc = 0
         self.m1_spd = 0.0
         self.m2_spd = 0.0
-        self.mutex = Lock()  # Mutex to ensure thread-safe serial communication.
+        # Mutex to ensure thread-safe serial communication.
+        self.mutex = Lock()
 
         # Initialize odometry variables
         self.x = 0.0  # Position in x
@@ -94,14 +98,16 @@ class MotorDriver(Node):
             self._logger.info(
                 f"Connecting to port {self.serial_port} at {self.baud_rate}."
             )
-            self.conn = serial.Serial(self.serial_port, self.baud_rate, timeout=1.0)
+            self.conn = serial.Serial(
+                self.serial_port, self.baud_rate, timeout=1.0)
             self._logger.info(f"Connected to {self.conn}")
         except serial.SerialException as e:
             self._logger.error(f"Failed to connect to {self.serial_port}: {e}")
             raise
 
     def argument_parsing(self, args):
-        parser = argparse.ArgumentParser(description="Arguments for frame names.")
+        parser = argparse.ArgumentParser(
+            description="Arguments for frame names.")
         parser.add_argument(
             "-robot_name_value",
             type=str,
@@ -129,7 +135,8 @@ class MotorDriver(Node):
             mot_1_ct_per_loop (float): Encoder count per loop for motor 1.
             mot_2_ct_per_loop (float): Encoder count per loop for motor 2.
         """
-        self.send_command(f"m {int(mot_1_ct_per_loop)} {int(mot_2_ct_per_loop)}")
+        self.send_command(
+            f"m {int(mot_1_ct_per_loop)} {int(mot_2_ct_per_loop)}")
 
     def send_encoder_read_command(self) -> List[int]:
         """Send command to retrieve encoder values from motors.
@@ -160,8 +167,10 @@ class MotorDriver(Node):
         angular_vel = msg.angular.z
 
         # Calculate wheel velocities in m/s for differential drive kinematics.
-        left_wheel_speed = linear_vel - (angular_vel * self.wheel_separation) / 2
-        right_wheel_speed = linear_vel + (angular_vel * self.wheel_separation) / 2
+        left_wheel_speed = linear_vel - \
+            (angular_vel * self.wheel_separation) / 2
+        right_wheel_speed = linear_vel + \
+            (angular_vel * self.wheel_separation) / 2
 
         # Avoid divide by zero in wheel radius
         if self.wheel_radius == 0:
@@ -187,7 +196,8 @@ class MotorDriver(Node):
 
         # Check if counts per loop are finite before sending
         if math.isfinite(mot_1_ct_per_loop) and math.isfinite(mot_2_ct_per_loop):
-            self.send_feedback_motor_command(mot_1_ct_per_loop, mot_2_ct_per_loop)
+            self.send_feedback_motor_command(
+                mot_1_ct_per_loop, mot_2_ct_per_loop)
         else:
             self._logger.warning(
                 "Non-finite motor count detected, skipping command send."
@@ -226,7 +236,7 @@ class MotorDriver(Node):
             self.encoder_pub_.publish(enc_msg)
 
             # Publish odometry based on encoder readings
-            # self.publish_odometry()
+            self.publish_odometry()
 
     def publish_odometry(self) -> None:
         """Publish odometry data based on encoder readings."""
@@ -305,15 +315,18 @@ class MotorDriver(Node):
         """
         with self.mutex:
             try:
-                cmd_string += "\r"  # Add carriage return for command termination.
+                # Add carriage return for command termination.
+                cmd_string += "\r"
                 self.conn.write(cmd_string.encode("utf-8"))
                 if self.debug_serial_cmds:
                     self._logger.info(f"Sent: {cmd_string}")
 
                 # Read response until carriage return is received.
-                response = self.conn.read_until(b"\r").decode("utf-8").strip("\r")
+                response = self.conn.read_until(
+                    b"\r").decode("utf-8").strip("\r")
                 if not response:
-                    self._logger.warning(f"Serial timeout on command: {cmd_string}")
+                    self._logger.warning(
+                        f"Serial timeout on command: {cmd_string}")
                     return None
                 if self.debug_serial_cmds:
                     self._logger.info(f"Received: {response}")
